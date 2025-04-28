@@ -1,0 +1,31 @@
+[
+  {
+    "chatId": "19658065-6808-4982-8a30-c4908784949d",
+    "id": "241f7807-bd41-4a70-8036-4c3628747668",
+    "role": "user",
+    "parts": [
+      {
+        "text": "hi",
+        "type": "text"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2025-04-28T05:51:39.826Z"
+  },
+  {
+    "id": "0930a704-3cf8-4f7f-8093-660252ad3fea",
+    "chatId": "19658065-6808-4982-8a30-c4908784949d",
+    "role": "assistant",
+    "parts": [
+      {
+        "type": "step-start"
+      },
+      {
+        "type": "text",
+        "text": "Hi! How can I help you today?\n"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2025-04-28T05:51:42.252Z"
+  }
+]

@@ -4,6 +4,7 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { xai } from '@ai-sdk/xai';
+import { createVertex } from '@ai-sdk/google-vertex';
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -11,6 +12,12 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+
+export const vertex = createVertex({
+  project: 'agent-kenokabe01',
+  location: 'us-central1',
+});
+// 例: vertex('gemini-2.0-flash-001') でモデル指定
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -23,15 +30,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'chat-model': vertex('gemini-2.0-flash-001'),
+        'chat-model-reasoning': vertex('gemini-2.0-flash-001'),
+        'title-model': vertex('gemini-2.0-flash-001'),
+        'artifact-model': vertex('gemini-2.0-flash-001'),
       },
       imageModels: {
-        'small-model': xai.image('grok-2-image'),
+        // Vertex AI画像モデルを使う場合はここに追加
       },
     });
