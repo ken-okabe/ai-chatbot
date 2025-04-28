@@ -5,7 +5,6 @@ import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
-import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
 import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
@@ -15,7 +14,8 @@ import { useArtifactSelector } from '@/hooks/use-artifact';
 import { unstable_serialize } from 'swr/infinite';
 import { getChatHistoryPaginationKey } from './sidebar-history';
 import { toast } from './toast';
-import type { Session } from 'next-auth';
+
+type Vote = any;
 
 export function Chat({
   id,
@@ -23,14 +23,12 @@ export function Chat({
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
-  session,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
-  session: Session;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -82,7 +80,6 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
-          session={session}
         />
 
         <Messages

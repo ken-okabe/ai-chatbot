@@ -1,18 +1,31 @@
 import { z } from 'zod';
-import { Session } from 'next-auth';
 import { DataStreamWriter, streamObject, tool } from 'ai';
-import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
+// import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
 import { Suggestion } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
 import { myProvider } from '../providers';
 
 interface RequestSuggestionsProps {
-  session: Session;
   dataStream: DataStreamWriter;
 }
 
+const getDocumentById = async ({ id }: { id: string }) => {
+  // Dummy function to replace the original getDocumentById
+  return {
+    id,
+    content: 'This is a dummy document content',
+    title: 'Dummy Document',
+    kind: 'dummy',
+    createdAt: new Date(),
+  };
+};
+
+const saveSuggestions = async ({ suggestions }: { suggestions: any[] }) => {
+  // Dummy function to replace the original saveSuggestions
+  console.log('Suggestions saved:', suggestions);
+};
+
 export const requestSuggestions = ({
-  session,
   dataStream,
 }: RequestSuggestionsProps) =>
   tool({
@@ -66,18 +79,13 @@ export const requestSuggestions = ({
         suggestions.push(suggestion);
       }
 
-      if (session.user?.id) {
-        const userId = session.user.id;
-
-        await saveSuggestions({
-          suggestions: suggestions.map((suggestion) => ({
-            ...suggestion,
-            userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
-          })),
-        });
-      }
+      await saveSuggestions({
+        suggestions: suggestions.map((suggestion) => ({
+          ...suggestion,
+          createdAt: new Date(),
+          documentCreatedAt: document.createdAt,
+        })),
+      });
 
       return {
         id: documentId,

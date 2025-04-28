@@ -2,7 +2,6 @@
   "id": "c6c102e6-b64e-4f0c-a7a6-32df758de437",
   "prevId": "30ad8233-1432-428b-93fc-2bb1ba867ff1",
   "version": "7",
-  "dialect": "postgresql",
   "tables": {
     "public.Chat": {
       "name": "Chat",

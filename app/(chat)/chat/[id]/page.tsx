@@ -1,12 +1,12 @@
 import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
-import { auth } from '@/app/(auth)/auth';
-import { Chat } from '@/components/chat';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
+import { Chat } from '@/components/chat';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
-import type { DBMessage } from '@/lib/db/schema';
+// import type { DBMessage } from '@/lib/db/schema';
+type DBMessage = any;
 import type { Attachment, UIMessage } from 'ai';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -16,22 +16,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!chat) {
     notFound();
-  }
-
-  const session = await auth();
-
-  if (!session) {
-    redirect('/api/auth/guest');
-  }
-
-  if (chat.visibility === 'private') {
-    if (!session.user) {
-      return notFound();
-    }
-
-    if (session.user.id !== chat.userId) {
-      return notFound();
-    }
   }
 
   const messagesFromDb = await getMessagesByChatId({
@@ -62,8 +46,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={convertToUIMessages(messagesFromDb)}
           selectedChatModel={DEFAULT_CHAT_MODEL}
           selectedVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
-          session={session}
+          isReadonly={false}
         />
         <DataStreamHandler id={id} />
       </>
@@ -77,8 +60,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={convertToUIMessages(messagesFromDb)}
         selectedChatModel={chatModelFromCookie.value}
         selectedVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
-        session={session}
+        isReadonly={false}
       />
       <DataStreamHandler id={id} />
     </>

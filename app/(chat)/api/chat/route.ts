@@ -5,12 +5,10 @@ import {
   smoothStream,
   streamText,
 } from 'ai';
-import { auth, type UserType } from '@/app/(auth)/auth';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
   getChatById,
-  getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
@@ -23,7 +21,6 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 
 export const maxDuration = 60;
@@ -41,28 +38,6 @@ export async function POST(request: Request) {
   try {
     const { id, message, selectedChatModel } = requestBody;
 
-    const session = await auth();
-
-    if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    const userType: UserType = session.user.type;
-
-    const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
-      differenceInHours: 24,
-    });
-
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new Response(
-        'You have exceeded your maximum number of messages for the day! Please try again later.',
-        {
-          status: 429,
-        },
-      );
-    }
-
     const chat = await getChatById({ id });
 
     if (!chat) {
@@ -70,17 +45,12 @@ export async function POST(request: Request) {
         message,
       });
 
-      await saveChat({ id, userId: session.user.id, title });
-    } else {
-      if (chat.userId !== session.user.id) {
-        return new Response('Forbidden', { status: 403 });
-      }
+      await saveChat({ id, userId: '', title });
     }
 
     const previousMessages = await getMessagesByChatId({ id });
 
     const messages = appendClientMessage({
-      // @ts-expect-error: todo add type conversion from DBMessage[] to UIMessage[]
       messages: previousMessages,
       message,
     });
@@ -118,47 +88,42 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            createDocument: createDocument({ dataStream }),
+            updateDocument: updateDocument({ dataStream }),
+            requestSuggestions: requestSuggestions({ dataStream }),
           },
           onFinish: async ({ response }) => {
-            if (session.user?.id) {
-              try {
-                const assistantId = getTrailingMessageId({
-                  messages: response.messages.filter(
-                    (message) => message.role === 'assistant',
-                  ),
-                });
+            try {
+              const assistantId = getTrailingMessageId({
+                messages: response.messages.filter(
+                  (message) => message.role === 'assistant',
+                ),
+              });
 
-                if (!assistantId) {
-                  throw new Error('No assistant message found!');
-                }
-
-                const [, assistantMessage] = appendResponseMessages({
-                  messages: [message],
-                  responseMessages: response.messages,
-                });
-
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
-                });
-              } catch (_) {
-                console.error('Failed to save chat');
+              if (!assistantId) {
+                throw new Error('No assistant message found!');
               }
+
+              const [, assistantMessage] = appendResponseMessages({
+                messages: [message],
+                responseMessages: response.messages,
+              });
+
+              await saveMessages({
+                messages: [
+                  {
+                    id: assistantId,
+                    chatId: id,
+                    role: assistantMessage.role,
+                    parts: assistantMessage.parts,
+                    attachments:
+                      assistantMessage.experimental_attachments ?? [],
+                    createdAt: new Date(),
+                  },
+                ],
+              });
+            } catch (_) {
+              console.error('Failed to save chat');
             }
           },
           experimental_telemetry: {
@@ -192,18 +157,8 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   try {
     const chat = await getChatById({ id });
-
-    if (chat.userId !== session.user.id) {
-      return new Response('Forbidden', { status: 403 });
-    }
 
     const deletedChat = await deleteChatById({ id });
 

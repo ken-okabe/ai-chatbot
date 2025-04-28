@@ -2,7 +2,6 @@
   "id": "b5d8e862-936f-4419-a50f-97be3e7fe665",
   "prevId": "f3d3437c-4735-4c91-80af-1014048a904e",
   "version": "7",
-  "dialect": "postgresql",
   "tables": {
     "public.Suggestion": {
       "name": "Suggestion",
