@@ -44,7 +44,7 @@ function PureMessages({
           message={message}
           isLoading={status === 'streaming' && messages.length - 1 === index}
           vote={
-            votes
+            Array.isArray(votes)
               ? votes.find((vote) => vote.messageId === message.id)
               : undefined
           }

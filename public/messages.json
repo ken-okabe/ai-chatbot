@@ -56,5 +56,34 @@
     ],
     "attachments": [],
     "createdAt": "2025-04-28T11:00:39.830Z"
+  },
+  {
+    "chatId": "bf2791c2-7d78-4110-a88a-0e2c72e04597",
+    "id": "3f46ed55-89fe-4eeb-a315-5cf8dad11964",
+    "role": "user",
+    "parts": [
+      {
+        "text": "hi",
+        "type": "text"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2025-04-28T11:06:33.404Z"
+  },
+  {
+    "id": "2dbe3402-b35c-402b-a7d0-24c4879feab7",
+    "chatId": "bf2791c2-7d78-4110-a88a-0e2c72e04597",
+    "role": "assistant",
+    "parts": [
+      {
+        "type": "step-start"
+      },
+      {
+        "type": "text",
+        "text": "Hi! How can I help you today?\n"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2025-04-28T11:06:35.684Z"
   }
 ]
